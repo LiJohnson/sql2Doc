@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="http://gtbcode.sinaapp.com/load.php?c=1&amp;type=js&amp;load=jquery.js,bootstrap.js,jquery.plugin.js"></script>
+	<script src="http://gtbcode.sinaapp.com/load.php?c=1&type=js&load=jquery.js,bootstrap.js,jquery.plugin.js"></script>
 	<title>sql2doc</title>
 	<link rel="stylesheet" href="http://gtbcode.sinaapp.com/css/bootstrap.min.css" />
 	<style> 
@@ -27,7 +27,7 @@
 	li{padding: 5px 0px 0px 10px;width: 290px;display: inline-block;}
 	[table].table-hide table{display:none}
 	tr[key=primary] td{background-color:rgb(217, 237, 247);}
-	tr[key*=key] td{background-color:rgb(223, 240, 216);}
+	tr[key*=fk] td{background-color:rgb(223, 240, 216);}
 	tr td:first-child{ font-weight: bold; text-align: center; color: gray;}
 	.to-top{ opacity: .3; position: fixed; right: 3px; bottom: 10px; zoom: 2.5; }
 	.to-top:hover{opacity: 1}
@@ -49,7 +49,8 @@
 		$btn.click(function(){
 			$("[table]").remove();
 			var c = 1 ;
-			$.each($data.val().match(/CREATE\s+TABLE[^;]+;/g),function(i,table){
+			var val = $data.val();
+			$.each(val.match(/CREATE\s+TABLE[^;]+;/g),function(i,table){
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
@@ -57,21 +58,37 @@
 				var rows = table.split("\n");
 				var tableName = (rows.shift().match(/`[^`]+`/)||[""])[0].replace(/`/g,"");
 				var tableName2 = ((rows.pop().match(/COMMENT=\'[^\']+\'/)||[""])[0].split("=")[1]||"").replace(/\'/g,"").replace(";","");
+
+				var getKeys = function( tableName ){
+					var text = val.match( new RegExp("ALTER TABLE `"+tableName+"`[^;]+;","gi")) || [];
+					var key = {};
+					var colReg = /\(`([^`\)]+(`\,`)?)+`\)/;
+					$.each(text.join("\n").split("\n") , function(i,row){
+						if( /PRIMARY\sKEY/.test(row) ){
+							key.primary = row.match(colReg)[0].replace(/[\(\)`]/g,"");
+						}
+
+						if( /FOREIGN\sKEY/.test(row) ){
+							key["fk_"+i] = {
+								col:row.match(colReg)[0].replace(/[\(\)`]/g,""),
+								table:row.match(/REFERENCES\s`[^`]+`/)[0].replace(/REFERENCES|[\`\(\)\s]/g,'')
+							};
+						}
+					});
+					return key;
+
+				};
 				$_table.setHtml({title:tableName + " " + tableName2});
 				$_table.find("[html-title]").attr("id",tableName);
 				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + tableName2 + "</a></li>");
 				$_table.find("[button]").html('<i class="icon-white icon-chevron-up"></i> '+tableName).attr("id",tableName);
 				$_table.find("table").attr("name",tableName);
 				
+				keys = getKeys(tableName);
+				
 				$.each(rows,function(i,row){
 					row = row.trim();
-					if( row[0]!='`' ){
-						try{
-						/PRIMARY\sKEY/.test(row) ? (keys.primary = row.match(/\(`([^`\)]+(`\,`)?)+`\)/)[0].replace(/[\(\)`]/g,""))
-						: /^[^`]*KEY/.test(row) && (keys["key"+i] = row.match(/\(`([^`\)]+(`\,`)?)+`\)/)[0].replace(/[\(\)`]/g,""));
-						}catch(e){};
-						return;
-					}
+					
 					var _ = row.trim().split(" ");
 					var data = {};
 					data.no = i+1;
@@ -83,8 +100,13 @@
 					data.comment = ((row.match(/COMMENT\s.+/)||[""])[0]).replace(/\'/g,"").replace(/\,$/,"").replace("COMMENT ","");
 					$_tbody.append($(tr).setHtml(data).attr("name",data.name));
 				});
-				$.each(keys,function(k,name){
-					$_table.find("tr[name='"+name+"']").attr('key',k);
+				$.each(keys,function(k,key){
+					var name = key.col || key;
+					var $tr = $_table.find("tr[name='" + name + "']").attr('key',k);
+					if ( key.table ){
+						var $td = $tr.find("[html-name]");
+						$td.html($("<a>").html($td.html()).prop("href","#"+key.table));
+					}
 				});
 				$("body").append($_table);
 			});
