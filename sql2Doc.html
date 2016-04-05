@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="http://gtbcode.sinaapp.com/load.php?c=1&type=js&load=jquery.js,bootstrap.js,jquery.plugin.js"></script>
+	<script src="http://sae.lcs.com/gtbcode/load.php?c=1&type=js&load=jquery.js,bootstrap.js,jquery.plugin.js"></script>
 	<title>sql2doc</title>
-	<link rel="stylesheet" href="http://gtbcode.sinaapp.com/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="http://sae.lcs.com/gtbcode/css/bootstrap.min.css" />
 	<style> 
 	::-webkit-scrollbar{width:10px;height:10px;}
 	::-webkit-scrollbar-button:vertical:increment{background-color:transparent;}
@@ -39,26 +39,41 @@
 	<script>
 	$(function(){
 		var $data = $("textarea");
-		var $btn = $("a.btn");
+		var $btn = $("a.btn.sql");
 		var $tbody = $("tbody");
 		var $table = $("[table]");
 		var $nav = $("[nav]");
 		
 		var tr = "<tr><td html-no ></td><td html-name >字段名</td><td html-type >数据类型</td><td html-null >可空</td><td html-default >默认</td><td html-comment >描述</td></tr>";
+
+		var getComments = function(text){
+			var data = {};
+			text.match(/comment\son[^;]+;/gi).forEach(function(comment) {
+				var arr = comment.trim().replace(/^comment\son\s(table|column)/i,'').replace(/\s+/g,' ').split(/\sis\s/i);
+				data[arr[0].toUpperCase().trim()] = arr[1].replace(/[';]/g,'');
+			});
+			console.log(data);
+			return data;
+		};
+
 		$table.remove();
 		$btn.click(function(){
 			$("[table]").remove();
 			var c = 1 ;
 			var val = $data.val();
-			$.each(val.match(/CREATE\s+TABLE[^;]+;/g),function(i,table){
+			var comments = getComments(val);
+			var getComment = function(table,column){
+				var key = table + (column ? '.'+column:'');
+				return comments[key.toUpperCase()] || '';
+			};
+			$.each(val.match(/CREATE\s+TABLE[^;]+\n\)\n/ig),function(i,table){
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
-				
-				var rows = table.split("\n");
-				var tableName = (rows.shift().match(/`[^`]+`/)||[""])[0].replace(/`/g,"");
-				var tableName2 = ((rows.pop().match(/COMMENT=\'[^\']+\'/)||[""])[0].split("=")[1]||"").replace(/\'/g,"").replace(";","");
 
+				var rows = table.split("\n");
+				var tableName = rows.shift().trim().split(' ').pop();
+				if( !/(^SYS_|^BI_)/.test(tableName) )return;
 				var getKeys = function( tableName ){
 					var text = val.match( new RegExp("ALTER TABLE `"+tableName+"`[^;]+;","gi")) || [];
 					var key = {};
@@ -78,26 +93,27 @@
 					return key;
 
 				};
-				$_table.setHtml({title:tableName + " " + tableName2});
+				$_table.setHtml({title:tableName + " " + getComment(tableName)});
 				$_table.find("[html-title]").attr("id",tableName);
-				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + tableName2 + "</a></li>");
+				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + getComment(tableName) + "</a></li>");
 				$_table.find("[button]").html('<i class="icon-white icon-chevron-up"></i> '+tableName).attr("id",tableName);
 				$_table.find("table").attr("name",tableName);
-				
+
 				keys = getKeys(tableName);
-				
+
 				$.each(rows,function(i,row){
 					row = row.trim();
-					
-					var _ = row.trim().split(" ");
+
+					var _ = row.trim().replace(/\s+/,' ').split(" ");
 					var data = {};
-					data.no = i+1;
+					if(!_[1])return;
+					data.no = i;
 					data.name = _[0].match(/\w+/)[0];
 					data.type = _[1];//.replace(/\,/g,"");
 					data.null = row.match(/NOT NULL/)?"N":"Y";
 					data.default = (row.match(/DEFAULT\s[^\s]+\s/)||[""])[0].match(/\s.+/);
 					data.default = (data.default||[""])[0].trim().replace(/\'/g,"") || "";
-					data.comment = ((row.match(/COMMENT\s.+/)||[""])[0]).replace(/\'/g,"").replace(/\,$/,"").replace("COMMENT ","");
+					data.comment = getComment(tableName,data.name);
 					$_tbody.append($(tr).setHtml(data).attr("name",data.name));
 				});
 				$.each(keys,function(k,key){
@@ -154,15 +170,22 @@
 		});
 	});
 	</script>
+	<script type="text/javascript">
+		$(document).on("click",".btn.haha",function(){
+			$(this).prevAll().add(this).remove();
+			return false;
+		});
+	</script>
 </head>
 <body style="">
 	<textarea focused placeholder='输入sql.....(需要jquery jquery.plugin bootstrap)' style=" height: 50px; width: 48%;"></textarea>
 	<div drag  style="width:48%;height:50px;float:right;background-color:gray"></div>
 	<br>
 	<input type=file /><br>
-	<a class=btn >translate</a>
+	<a class="btn sql" >translate</a>
 	<br>
 	<br>
+	<a class='btn btn-default haha' >haha</a>
 	<ol nav >
 	</ol>
 	<div table class >
