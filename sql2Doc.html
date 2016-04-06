@@ -86,7 +86,9 @@
 
 				var rows = table.split("\n");
 				var tableName = rows.shift().trim().split(' ').pop();
+				
 				if( !/(^SYS_|^BI_)/.test(tableName) )return;
+				
 				var getKeys = function( tableName ){
 					var text = val.match( new RegExp("ALTER TABLE "+tableName+"[^;]+;","gi")) || [];
 					var key = {};
@@ -125,9 +127,9 @@
 					data.no = i;
 					data.name = _[0].match(/\w+/)[0];
 					data.type = _[1];//.replace(/\,/g,"");
-					data.null = row.match(/NOT NULL/)?"N":"Y";
-					data.default = (row.match(/DEFAULT\s[^\s]+\s/)||[""])[0].match(/\s.+/);
-					data.default = (data.default||[""])[0].trim().replace(/\'/g,"") || "";
+					data.null = row.match(/NOT NULL/i)?"N":"Y";
+					data.default = (row.match(/DEFAULT\s[^\s]+[\s,]/i)||[""])[0].match(/\s.+/);
+					data.default = (data.default||[""])[0].trim().replace(/(\'|,$)/g,"") || "";
 					data.comment = getComment(tableName,data.name);
 					$_tbody.append($(tr).setHtml(data).attr("name",data.name));
 				});
