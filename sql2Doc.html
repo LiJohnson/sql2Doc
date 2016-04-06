@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="http://sae.lcs.com/gtbcode/load.php?c=1&type=js&load=jquery.js,bootstrap.js,jquery.plugin.js"></script>
+	<script src="http://gtbcode.lcs.io/js/jquery.js"></script>
+	<script src="http://gtbcode.lcs.io/js/bootstrap.js"></script>
+	<script src="http://gtbcode.lcs.io/js/jquery.plugin.js"></script>
 	<title>sql2doc</title>
-	<link rel="stylesheet" href="http://sae.lcs.com/gtbcode/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="http://gtbcode.lcs.io/css/bootstrap.min.css" />
 	<style> 
 	::-webkit-scrollbar{width:10px;height:10px;}
 	::-webkit-scrollbar-button:vertical:increment{background-color:transparent;}
@@ -28,6 +30,7 @@
 	[table].table-hide table{display:none}
 	tr[key=primary] td{background-color:rgb(217, 237, 247);}
 	tr[key*=fk] td{background-color:rgb(223, 240, 216);}
+	tr.index td{background-color: rgb(247, 217, 221)}
 	tr td:first-child{ font-weight: bold; text-align: center; color: gray;}
 	.to-top{ opacity: .3; position: fixed; right: 3px; bottom: 10px; zoom: 2.5; }
 	.to-top:hover{opacity: 1}
@@ -55,7 +58,16 @@
 			console.log(data);
 			return data;
 		};
-
+		var getIndexs = function(val){
+			var indexs = {};
+			val.match(/create\sindex\s\w+\son\s[^\)]+\)/i).forEach(function(index){
+				var text = index.split(/\son\s/i).pop();
+				text = text.trim().replace(/[\(\)]/g,'').replace(/\s/,'.');
+				indexs[text.toUpperCase()] = true;
+			});
+			console.log(indexs);
+			return indexs;
+		};
 		$table.remove();
 		$btn.click(function(){
 			$("[table]").remove();
@@ -66,7 +78,8 @@
 				var key = table + (column ? '.'+column:'');
 				return comments[key.toUpperCase()] || '';
 			};
-			$.each(val.match(/CREATE\s+TABLE[^;]+\n\)\n/ig),function(i,table){
+
+			$.each(val.match(/CREATE\s+TABLE[^;]+\n\)\n/ig).sort(),function(i,table){
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
@@ -75,18 +88,20 @@
 				var tableName = rows.shift().trim().split(' ').pop();
 				if( !/(^SYS_|^BI_)/.test(tableName) )return;
 				var getKeys = function( tableName ){
-					var text = val.match( new RegExp("ALTER TABLE `"+tableName+"`[^;]+;","gi")) || [];
+					var text = val.match( new RegExp("ALTER TABLE "+tableName+"[^;]+;","gi")) || [];
 					var key = {};
 					var colReg = /\(`([^`\)]+(`\,`)?)+`\)/;
-					$.each(text.join("\n").split("\n") , function(i,row){
-						if( /PRIMARY\sKEY/.test(row) ){
-							key.primary = row.match(colReg)[0].replace(/[\(\)`]/g,"");
-						}
+					$.each(text , function(i,row){
+						var k = row.match(/PRIMARY\sKEY\s\(\w+\)/gi);
 
-						if( /FOREIGN\sKEY/.test(row) ){
+						if( k ){
+							key.primary = k[0].match(/\(\w+\)/)[0].replace(/[\(\)]/g,'');
+						}
+						k = row.match(/FOREIGN\sKEY\s\(\w+\)/gi);
+						if( k ){
 							key["fk_"+i] = {
-								col:row.match(colReg)[0].replace(/[\(\)`]/g,""),
-								table:row.match(/REFERENCES\s`[^`]+`/)[0].replace(/REFERENCES|[\`\(\)\s]/g,'')
+								col:k[0].match(/\(\w+\)/)[0].replace(/[\(\)]/g,''),
+								table:row.match(/REFERENCES\s[^\)]+\)/i)[0].replace(/REFERENCES|\(\w+\)|\s/ig,'')
 							};
 						}
 					});
@@ -126,6 +141,12 @@
 				});
 				$("body").append($_table);
 			});
+
+			$.each(getIndexs(val),function(key){
+				var arr = key.split('.');
+				$('table[name='+arr[0]+'] tr[name='+arr[1]+']').addClass('index');
+			});
+
 			$("[button]").click(function(){
 				$(this).parent().toggleClass("table-hide");
 				$(this).find("i").toggleClass("icon-chevron-down");
@@ -172,8 +193,14 @@
 	</script>
 	<script type="text/javascript">
 		$(document).on("click",".btn.haha",function(){
-			$(this).prevAll().add(this).remove();
-			return false;
+			var $this = $(this);
+			$this.prevAll().remove();
+			$('script').remove();
+			$this.hide();
+			var $html = $('html').clone();
+			$html.find('.btn.haha').remove();
+			$this.prop('href',URL.createObjectURL( new Blob([$html[0].outerHTML]) ));
+			setTimeout(function(){$this.remove();},100);
 		});
 	</script>
 </head>
@@ -185,7 +212,7 @@
 	<a class="btn sql" >translate</a>
 	<br>
 	<br>
-	<a class='btn btn-default haha' >haha</a>
+	<a class='btn btn-default haha' download="sql.html" >haha</a>
 	<ol nav >
 	</ol>
 	<div table class >
