@@ -51,7 +51,7 @@
 
 		var getComments = function(text){
 			var data = {};
-			text.match(/comment\son[^;]+;/gi).forEach(function(comment) {
+			(text.match(/comment\son[^;]+;/gi)||[]).forEach(function(comment) {
 				var arr = comment.trim().replace(/^comment\son\s(table|column)/i,'').replace(/\s+/g,' ').split(/\sis\s/i);
 				data[arr[0].toUpperCase().trim()] = arr[1].replace(/[';]/g,'');
 			});
@@ -60,7 +60,7 @@
 		};
 		var getIndexs = function(val){
 			var indexs = {};
-			val.match(/create\sindex\s\w+\son\s[^\)]+\)/i).forEach(function(index){
+			(val.match(/create\sindex\s\w+\son\s[^\)]+\)/gi)||[]).forEach(function(index){
 				var text = index.split(/\son\s/i).pop();
 				text = text.trim().replace(/[\(\)]/g,'').replace(/\s/,'.');
 				indexs[text.toUpperCase()] = true;
@@ -79,7 +79,7 @@
 				return comments[key.toUpperCase()] || '';
 			};
 
-			$.each(val.match(/CREATE\s+TABLE[^;]+\n\)\n/ig).sort(),function(i,table){
+			$.each(val.match(/CREATE\s+TABLE[^;]+\n\);?\n/ig).sort(),function(i,table){
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
@@ -87,7 +87,7 @@
 				var rows = table.split("\n");
 				var tableName = rows.shift().trim().split(' ').pop();
 				
-				if( !/(^SYS_|^BI_)/.test(tableName) )return;
+				//if( !/(^SYS_|^BI_)/.test(tableName) )return;
 				
 				var getKeys = function( tableName ){
 					var text = val.match( new RegExp("ALTER TABLE "+tableName+"[^;]+;","gi")) || [];
@@ -124,6 +124,7 @@
 					var _ = row.trim().replace(/\s+/,' ').split(" ");
 					var data = {};
 					if(!_[1])return;
+					if(/constraint/i.test(_[0]))return;
 					data.no = i;
 					data.name = _[0].match(/\w+/)[0];
 					data.type = _[1];//.replace(/\,/g,"");
@@ -146,7 +147,9 @@
 
 			$.each(getIndexs(val),function(key){
 				var arr = key.split('.');
-				$('table[name='+arr[0]+'] tr[name='+arr[1]+']').addClass('index');
+				arr[1].split(',').forEach(function(name){
+					$('table[name='+arr[0]+'] tr[name='+name.trim()+']').addClass('index');
+				});
 			});
 
 			$("[button]").click(function(){
