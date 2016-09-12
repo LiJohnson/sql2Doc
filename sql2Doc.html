@@ -53,7 +53,7 @@
 			var data = {};
 			(text.match(/comment\son[^;]+;/gi)||[]).forEach(function(comment) {
 				var arr = comment.trim().replace(/^comment\son\s(table|column)/i,'').replace(/\s+/g,' ').split(/\sis\s/i);
-				data[arr[0].toUpperCase().trim()] = arr[1].replace(/[';]/g,'');
+				data[arr[0].toUpperCase().replace(/\"/g,'').trim()] = arr[1].replace(/[';]/g,'');
 			});
 			console.log(data);
 			return data;
