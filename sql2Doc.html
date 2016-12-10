@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="http://gtbcode.lcs.io/js/jquery.js"></script>
-	<script src="http://gtbcode.lcs.io/js/bootstrap.js"></script>
-	<script src="http://gtbcode.lcs.io/js/jquery.plugin.js"></script>
+	<script src="//gtbcode.lcs.io/js/jquery.js"></script>
+	<script src="//gtbcode.lcs.io/js/bootstrap.js"></script>
+	<script src="//gtbcode.lcs.io/js/jquery.plugin.js"></script>
 	<title>sql2doc</title>
-	<link rel="stylesheet" href="http://gtbcode.lcs.io/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="//gtbcode.lcs.io/css/bootstrap.min.css" />
 	<style> 
 	::-webkit-scrollbar{width:10px;height:10px;}
 	::-webkit-scrollbar-button:vertical:increment{background-color:transparent;}
@@ -71,6 +71,7 @@
 		$table.remove();
 		$btn.click(function(){
 			$("[table]").remove();
+			var tables = [];
 			var c = 1 ;
 			var val = $data.val();
 			var comments = getComments(val);
@@ -79,16 +80,19 @@
 				return comments[key.toUpperCase()] || '';
 			};
 
-			$.each(val.match(/CREATE\s+TABLE[^;]+\n\);?\n/ig).sort(),function(i,table){
+			$.each(val.match(/CREATE\s+TABLE[^;]+;?\n/ig).sort(),function(i,createTable){
+				createTable = createTable.replace(/"/g,'');
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
+				var table = {rows:[]};
+				var rows = createTable.replace(/^CREATE[^(]+\(/,'').replace(/\s*SEGMENT\sCREATION[^;]+/,'').trim().split("\n");
+				var tableName = createTable.match(/CREATE\s+TABLE\s\w+/)[0].split(' ').pop();
+				table.name = tableName;
+				table.comment = getComment(tableName);
 
-				var rows = table.split("\n");
-				var tableName = rows.shift().trim().split(' ').pop();
-				
 				//if( !/(^SYS_|^BI_)/.test(tableName) )return;
-				
+
 				var getKeys = function( tableName ){
 					var text = val.match( new RegExp("ALTER TABLE "+tableName+"[^;]+;","gi")) || [];
 					var key = {};
@@ -110,7 +114,7 @@
 					return key;
 
 				};
-				$_table.setHtml({title:tableName + " " + getComment(tableName)});
+				$_table.setHtml({title:tableName + " " + table.comment });
 				$_table.find("[html-title]").attr("id",tableName);
 				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + getComment(tableName) + "</a></li>");
 				$_table.find("[button]").html('<i class="icon-white icon-chevron-up"></i> '+tableName).attr("id",tableName);
@@ -127,11 +131,12 @@
 					if(/constraint/i.test(_[0]))return;
 					data.no = i;
 					data.name = _[0].match(/\w+/)[0];
-					data.type = _[1];//.replace(/\,/g,"");
+					data.type = _[1].replace(/\,$/g,"");
 					data.null = row.match(/NOT NULL/i)?"N":"Y";
 					data.default = (row.match(/DEFAULT\s[^\s]+[\s,]/i)||[""])[0].match(/\s.+/);
 					data.default = (data.default||[""])[0].trim().replace(/(\'|,$)/g,"") || "";
 					data.comment = getComment(tableName,data.name);
+					table.rows.push(data)
 					$_tbody.append($(tr).setHtml(data).attr("name",data.name));
 				});
 				$.each(keys,function(k,key){
@@ -142,6 +147,7 @@
 						$td.html($("<a>").html($td.html()).prop("href","#"+key.table));
 					}
 				});
+				tables.push(table);
 				$("body").append($_table);
 			});
 
@@ -151,6 +157,8 @@
 					$('table[name='+arr[0]+'] tr[name='+name.trim()+']').addClass('index');
 				});
 			});
+			$data.val(JSON.stringify(tables));
+			console.log(tables);
 
 			$("[button]").click(function(){
 				$(this).parent().toggleClass("table-hide");
