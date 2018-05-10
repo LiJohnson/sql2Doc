@@ -81,7 +81,7 @@
 			};
 
 			$.each(val.match(/CREATE\s+TABLE[^;]+;?\n/ig).sort(),function(i,createTable){
-				createTable = createTable.replace(/"/g,'');
+				createTable = createTable.replace(/"/g,'').replace(/`/g,'');
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
@@ -129,6 +129,7 @@
 					var data = {};
 					if(!_[1])return;
 					if(/constraint/i.test(_[0]))return;
+					if( !_[0].match(/\w+/) )return;
 					data.no = i;
 					data.name = _[0].match(/\w+/)[0];
 					data.type = _[1].replace(/\,$/g,"");
