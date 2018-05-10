@@ -3,10 +3,10 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script src="//gtbcode.lcs.io/js/jquery.js"></script>
-    <script src="//gtbcode.lcs.io/js/bootstrap.js"></script>
-    <script src="//gtbcode.lcs.io/js/jquery.plugin.js"></script>
-    <title>sql2doc</title>
-    <link rel="stylesheet" href="//gtbcode.lcs.io/css/bootstrap.min.css" />
+	<script src="//gtbcode.lcs.io/js/bootstrap.js"></script>
+	<script src="//gtbcode.lcs.io/js/jquery.plugin.js"></script>
+	<title>sql2doc</title>
+	<link rel="stylesheet" href="//gtbcode.lcs.io/css/bootstrap.min.css" />
 	<style> 
 	::-webkit-scrollbar{width:10px;height:10px;}
 	::-webkit-scrollbar-button:vertical:increment{background-color:transparent;}
@@ -50,17 +50,19 @@
 		$table.remove();
 		$btn.click(function(){
 			$("[table]").remove();
+			var tables = [];
 			var c = 1 ;
 			var val = $data.val();
 			$.each(val.match(/CREATE\s+TABLE[^;]+;/g),function(i,table){
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
-				
+                var tableData = {rows:[]};
 				var rows = table.split("\n");
 				var tableName = (rows.shift().match(/`[^`]+`/)||[""])[0].replace(/`/g,"");
-				var tableName2 = ((rows.pop().match(/COMMENT=\'[^\']+\'/)||[""])[0].split("=")[1]||"").replace(/\'/g,"").replace(";","");
-
+				var tableComment = ((rows.pop().match(/COMMENT=\'[^\']+\'/)||[""])[0].split("=")[1]||"").replace(/\'/g,"").replace(";","");
+				tableData.name = tableName;
+				tableData.comment = tableComment;
 				var getKeys = function( tableName ){
 					var text = val.match( new RegExp("ALTER TABLE `"+tableName+"`[^;]+;","gi")) || [];
 					var key = {};
@@ -80,9 +82,9 @@
 					return key;
 
 				};
-				$_table.setHtml({title:tableName + " " + tableName2});
+				$_table.setHtml({title:tableName + " " + tableComment});
 				$_table.find("[html-title]").attr("id",tableName);
-				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + tableName2 + "</a></li>");
+				$nav.append("<li>"+(c++)+" <a href='#"+tableName+"' >" + tableName + " " + tableComment + "</a></li>");
 				$_table.find("[button]").html('<i class="icon-white icon-chevron-up"></i> '+tableName).attr("id",tableName);
 				$_table.find("table").attr("name",tableName);
 				
@@ -100,7 +102,8 @@
 					data.default = (row.match(/DEFAULT\s[^\s]+\s/)||[""])[0].match(/\s.+/);
 					data.default = (data.default||[""])[0].trim().replace(/\'/g,"") || "";
 					data.comment = ((row.match(/COMMENT\s.+/)||[""])[0]).replace(/\'/g,"").replace(/\,$/,"").replace("COMMENT ","");
-					$_tbody.append($(tr).setHtml(data).attr("name",data.name));
+					tableData.rows.push(data);
+                    $_tbody.append($(tr).setHtml(data).attr("name",data.name));
 				});
 				$.each(keys,function(k,key){
 					var name = key.col || key;
@@ -110,12 +113,14 @@
 						$td.html($("<a>").html($td.html()).prop("href","#"+key.table));
 					}
 				});
+				tables.push(tableData);
 				$("body").append($_table);
 			});
 			$("[button]").click(function(){
 				$(this).parent().toggleClass("table-hide");
 				$(this).find("i").toggleClass("icon-chevron-down");
 			});
+	        $data.val(JSON.stringify(tables));
 
 		});
 
