@@ -98,7 +98,8 @@ function getColumns(craeteTableText) {
 }
 
 function toJson(text) {
-    return text.match(/CREATE\s+TABLE[^;]+;/ig).map(craeteTableText => {
+
+    return (text.match(/CREATE\s+TABLE[^;]+;/ig)||[]).map(craeteTableText => {
         let table = {};
         table.name = craeteTableText.match(/^CREATE\s+TABLE\s+[`\w]+/i)[0].replace(/^CREATE\s+TABLE\s+/, '').replace(/`/g, '');
         table.comment = getTableComment(craeteTableText);
