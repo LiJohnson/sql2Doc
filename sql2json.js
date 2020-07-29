@@ -147,14 +147,14 @@ function getColumns(craeteTableText, comments, keyTypes, tableName) {
     return craeteTableText
         .replace(/^CREATE[^(]+\(/i, '')
         .replace(/\s*SEGMENT\sCREATION[^;]+/i, '')
-        .replace(/\n\)\n\/$/, '')
+        // .replace(/\n\)\n\/$/, '')
         .trim()
-        .match(/[^,]+(NUMBER\(\d+\,\d+\))?[^,]*(,\n|\n\))/gi)
+        .match(/[^,]+(NUMBER\([\d\,]+\))?[^,]*(,\n|\n\))/gi)
         .map(line => {
             let lineArr = line.trim().split(' ');
             let column = {};
             column.name = lineArr[0];
-            column.type = lineArr[1].replace(/\,$/g, '');
+            column.type = lineArr[1].replace(/\,$/g, '').replace(/\n\)$/,'');
             column.canNull = line.match(/NOT NULL/i) ? 'N' : 'Y';
 
             column.default = (line.match(/DEFAULT\s\S+[\s,]/i) || [""])[0].match(/\s.+/);
