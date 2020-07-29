@@ -17,6 +17,10 @@ function formatType(type) {
     if (type.match(/int/i)) return "number";
     if (type.match(/time/i)) return "datetime";
     if (type.match(/date/i)) return "datetime";
+    if (type.match(/NUMBER\(18\)/i)) return "long";
+    if (type.match(/NUMBER\((4|1)\)/i)) return "int";
+    if (type.match(/NUMBER\(\d+\,\d+\)/i)) return "double";
+
     if (!/^enum.+\,.+/.test("enum('EXCHANGE','REFUND','FOLLOWUP','PROCESSED')")) return type;
     return type.replace(/\,/g, ',<br/>');
 }
@@ -37,8 +41,8 @@ require('./sql2json').readFromStdin().then(data => {
         content.push('\n');
         content.push(table.comment);
         content.push('\n');
+        content.push('[options="header", cols=".^1a,.^3a,.^3a,.^1a,.^3a,.^5a"]');
         content.push('|===');
-
         content.push(`|序号|字段名|数据类型|可空|默认|描述`);
         // content.push(`|:--|:----|:------|:--|:---|:--|`);
         content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type)}|${column.canNull}|${column.default}|${column.comment}`));
@@ -47,6 +51,7 @@ require('./sql2json').readFromStdin().then(data => {
         return content.join('\n');
     });
     writeContent('sql.adoc', readme.concat(contents).join('\n'));
+}).then(()=>{
+    console.log(`asciidoctor -a doctype=pdf -a toc=left -a toclevels=3 ${outPut}/sql.adoc -o ${outPut}/sql.html`)
 });
 
-// asciidoctor -a doctype=pdf -a toc=left -a toclevels=3 /tmp/g/sql.adoc -o /tmp/g/sql.html
