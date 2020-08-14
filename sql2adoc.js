@@ -33,9 +33,11 @@ function formatName(column) {
     }
     return column.name;
 }
-require('./sql2json').readFromStdin().then(data => {
-
-    let readme = ['= sql doc\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| ${table.name}|${table.comment}`)).concat('|=== \n');
+require('./sql2json').readFromStdin().then(data=>{
+    return data.sort((table1,table2)=>table1.name.localeCompare(table2.name))
+}).then(data => {
+    let now = new Date()
+    let readme = ['= B2B 数据库设计','志盛科技 <lcs@gzzsyc.cn>',`v1.0.0-SNAPSHOT (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
     let contents = data.map(table => {
         let content = [`== ${table.name}`];
         content.push('\n');
@@ -44,8 +46,7 @@ require('./sql2json').readFromStdin().then(data => {
         content.push('[options="header", cols=".^1a,.^3a,.^3a,.^1a,.^3a,.^5a"]');
         content.push('|===');
         content.push(`|序号|字段名|数据类型|可空|默认|描述`);
-        // content.push(`|:--|:----|:------|:--|:---|:--|`);
-        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type)}|${column.canNull}|${column.default}|${column.comment}`));
+        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type).toLocaleUpperCase()}|${column.canNull}|${column.default}|${column.comment}`));
         content.push('|===');
         content.push('\n');
         return content.join('\n');

@@ -46,13 +46,14 @@
 		var $tbody = $("tbody");
 		var $table = $("[table]");
 		var $nav = $("[nav]");
+		
 		var tr = "<tr><td html-no ></td><td html-name >字段名</td><td html-type >数据类型</td><td html-null >可空</td><td html-default >默认</td><td html-comment >描述</td></tr>";
 
 		var getComments = function(text){
 			var data = {};
-			(text.match(/comment\son[^\/]+\n\//gi)||[]).forEach(function(comment) {
+			(text.match(/comment\son[^;]+;/gi)||[]).forEach(function(comment) {
 				var arr = comment.trim().replace(/^comment\son\s(table|column)/i,'').replace(/\s+/g,' ').split(/\sis\s/i);
-				data[arr[0].toUpperCase().replace(/\"/g,'').trim()] = arr[1].replace(/[';\/]/g,'');
+				data[arr[0].toUpperCase().replace(/\"/g,'').trim()] = arr[1].replace(/[';]/g,'');
 			});
 			console.log(data);
 			return data;
@@ -79,13 +80,13 @@
 				return comments[key.toUpperCase()] || '';
 			};
 
-			$.each(val.match(/CREATE\s+TABLE[^\/]+\n\//ig).sort(),function(i,createTable){
+			$.each(val.match(/CREATE\s+TABLE[^;]+;?\n/ig).sort(),function(i,createTable){
 				createTable = createTable.replace(/"/g,'').replace(/`/g,'');
 				var $_table = $table.clone();
 				var $_tbody = $_table.find("tbody");
 				var keys = {};
 				var table = {rows:[]};
-				var rows = createTable.replace(/^CREATE[^(]+\(/i,'').replace(/\s*SEGMENT\sCREATION[^;]+/i,'').replace(/\n\)\n\/$/,'').trim().match(/[^,]+(NUMBER\(\d+\,\d+\))?[^,]*(,|\n\))/gi);
+				var rows = createTable.replace(/^CREATE[^(]+\(/i,'').replace(/\s*SEGMENT\sCREATION[^;]+/i,'').trim().split("\n");
 				var tableName = createTable.match(/CREATE\s+TABLE\s\w+/i)[0].split(' ').pop();
 				table.name = tableName;
 				table.comment = getComment(tableName);
@@ -120,15 +121,7 @@
 				$_table.find("table").attr("name",tableName);
 
 				keys = getKeys(tableName);
-				rows.filter(row=>row.match(/PRIMARY\sKEY/i))
-					.map(row=>row.trim().split(" ")[0])
-					.forEach(pk=>{
-						keys.primary = pk;
-					});
 
-				$.each(rows,function(i,row){
-					keys
-				});
 				$.each(rows,function(i,row){
 					row = row.trim();
 
