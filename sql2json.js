@@ -149,9 +149,9 @@ function getColumns(craeteTableText, comments, keyTypes, tableName) {
         .replace(/\s*SEGMENT\sCREATION[^;]+/i, '')
         // .replace(/\n\)\n\/$/, '')
         .trim()
-        .match(/[^,]+(NUMBER\([\d\,]+\))?[^,]*(,\n|\n\))/gi)
+        .match(/[^,]+(NUMBER\([\d\,\s]+\))?[^,]*(,\n|\n\))/gi)
         .map(line => {
-            let lineArr = line.trim().split(' ');
+            let lineArr = line.trim().split(/\s+/);
             let column = {};
             column.name = lineArr[0];
             column.type = lineArr[1].replace(/\,$/g, '').replace(/\n\)$/,'');
