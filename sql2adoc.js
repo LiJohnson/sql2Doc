@@ -8,7 +8,7 @@ let outPut = process.argv[2];
 console.assert(outPut, "无效输出目录");
 
 function writeContent(fileName, content) {
-    console.debug(`${outPut}/${fileName}`)
+    // console.debug(`${outPut}/${fileName}`)
     fs.writeFileSync(`${outPut}/${fileName}`, content);
 };
 function formatType(type) {
@@ -37,7 +37,8 @@ require('./sql2json').readFromStdin().then(data=>{
     return data.sort((table1,table2)=>table1.name.localeCompare(table2.name))
 }).then(data => {
     let now = new Date()
-    let readme = ['= B2B 数据库设计','志盛科技 <lcs@gzzsyc.cn>',`v1.0.0-SNAPSHOT (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
+    // let readme = ['= B2B 数据库设计','志盛科技 <lcs@gzzsyc.cn>',`v1.0.0-SNAPSHOT (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
+    let readme = ['= MES（微信公众号）数据库设计','黎创盛 <lcs@gzzsyc.cn>',`v1.0.0 (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
     let contents = data.map(table => {
         let content = [`== ${table.name}`];
         content.push('\n');
@@ -46,7 +47,7 @@ require('./sql2json').readFromStdin().then(data=>{
         content.push('[options="header", cols=".^1a,.^3a,.^3a,.^1a,.^3a,.^5a"]');
         content.push('|===');
         content.push(`|序号|字段名|数据类型|可空|默认|描述`);
-        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type).toLocaleUpperCase()}|${column.canNull}|${column.default}|${column.comment}`));
+        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type).toLocaleUpperCase()}|${column.canNull}|${column.default}|${column.comment||''}`));
         content.push('|===');
         content.push('\n');
         return content.join('\n');
