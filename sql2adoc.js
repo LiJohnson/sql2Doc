@@ -12,7 +12,7 @@ function writeContent(fileName, content) {
     fs.writeFileSync(`${outPut}/${fileName}`, content);
 };
 function formatType(type) {
-    // if (type.match(/enum/i)) return "string";
+    if (type.match(/enum/i)) return "enum";
     if (type.match(/varchar/i)) return "string";
     if (type.match(/int/i)) return "number";
     if (type.match(/time/i)) return "datetime";
