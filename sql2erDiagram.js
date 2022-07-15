@@ -48,7 +48,7 @@ require('./sql2json').readFromStdin().then(data=>{
         .map(refTable=>`${refTable} ||--o{ ${table.name} : ${refTable}_id`)
     ).flat();
 
-    let readme = ['# 数据表关系','',`(${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`]
+    let readme = ['# 数据表关系','','黎创盛 <lcs@gzzsyc.cn>',`(${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`]
     writeContent( readme.concat(['```mermaid','erDiagram','']).concat(contents).concat(refContent).concat(['```']).join('\n'));
 });
 
