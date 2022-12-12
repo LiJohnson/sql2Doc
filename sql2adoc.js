@@ -38,7 +38,7 @@ require('./sql2json').readFromStdin().then(data=>{
 }).then(data => {
     let now = new Date()
     // let readme = ['= B2B 数据库设计','志盛科技 <lcs@gzzsyc.cn>',`v1.0.0-SNAPSHOT (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
-    let readme = ['= MES（微信公众号）数据库设计','黎创盛 <lcs@gzzsyc.cn>',`v1.0.0 (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
+    let readme = ['= MES（微信公众号）数据库设计','黎创盛 <598420668@qq.com>',`v1.0.0 (${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`, ':toc:\n', '[options="header", cols=".^1a,.^3a,.^9a"]','|=== ', '| | 表 | 注释 '].concat(data.map((table, index) => `|${index + 1}| <<_${table.name.toLocaleLowerCase()},${table.name}>> |${table.comment}`)).concat('|=== \n');
     let contents = data.map(table => {
         let content = [`== ${table.name}`];
         content.push('\n');
