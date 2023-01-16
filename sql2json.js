@@ -52,7 +52,7 @@ CREATE TABLE `gps_message` (
  * 表注释
  */
 function getTableComment(craeteTableText) {
-    console.debug(craeteTableText)
+    console.debug("craeteTableText",craeteTableText)
     let comment = craeteTableText.match(/\)[^\)]+COMMENT=[\s\S]+;$/gi);
     console.debug(comment)
     if (!comment) return "";
@@ -99,7 +99,7 @@ function getColumns(craeteTableText) {
 
 function toJson(text) {
 
-    return (text.match(/CREATE\s+TABLE[^;]+;/ig)||[]).map(craeteTableText => {
+    return (text.match(/CREATE\s+TABLE.+(\n\s+.+)+\n\).+;/ig)||[]).map(craeteTableText => {
         let table = {};
         table.name = craeteTableText.match(/^CREATE\s+TABLE\s+[`\w]+/i)[0].replace(/^CREATE\s+TABLE\s+/, '').replace(/`/g, '');
         table.comment = getTableComment(craeteTableText);
