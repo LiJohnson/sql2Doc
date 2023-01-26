@@ -52,9 +52,9 @@ CREATE TABLE `gps_message` (
  * 表注释
  */
 function getTableComment(craeteTableText) {
-    console.debug("craeteTableText",craeteTableText)
+    // console.debug("craeteTableText",craeteTableText)
     let comment = craeteTableText.match(/\)[^\)]+COMMENT=[\s\S]+;$/gi);
-    console.debug(comment)
+    // console.debug(comment)
     if (!comment) return "";
     return comment.pop().match(/COMMENT=\S+/i).pop().replace(/COMMENT=/i, '').replace(/'|;/g, '');
 }
@@ -98,8 +98,10 @@ function getColumns(craeteTableText) {
 }
 
 function toJson(text) {
-
-    return (text.match(/CREATE\s+TABLE.+(\n\s+.+)+\n\).+;/ig)||[]).map(craeteTableText => {
+    // console.log(text)
+    // console.log(text.match(/CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig))
+    // return []
+    return (text.match(    /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig)||[]).map(craeteTableText => {
         let table = {};
         table.name = craeteTableText.match(/^CREATE\s+TABLE\s+[`\w]+/i)[0].replace(/^CREATE\s+TABLE\s+/, '').replace(/`/g, '');
         table.comment = getTableComment(craeteTableText);
@@ -122,7 +124,7 @@ function readFromStdin() {
         process.stdin.on('end', () => {
             let data = toJson(textArray.join(''));
             ok(data)
-            console.debug(JSON.stringify(data,' ',' '));
+            // console.debug(JSON.stringify(data,' ',' '));
         });
     });
     return p;
