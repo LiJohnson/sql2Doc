@@ -78,9 +78,7 @@ function getKeyType(craeteTableText,columnName) {
  * 列信息
  */
 function getColumns(craeteTableText) {
-    return craeteTableText
-        .split('\n')
-        .filter(line=>line.trim().match(/^`/))
+    return craeteTableText.match(/\s+`\w+`\s[\(\)\w\,]{2,}[\w'\s]+COMMENT\s'[^']*'/gi)
         .map(line=>{
             let lineArr = line.trim().split(' ');
             let column = {};
@@ -98,10 +96,12 @@ function getColumns(craeteTableText) {
 }
 
 function toJson(text) {
-    // console.log(text)
-    // console.log(text.match(/CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig))
-    // return []
-    return (text.match(    /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig)||[]).map(craeteTableText => {
+    console.log(text)
+    // let createTableReg = /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig
+    let createTableReg = /CREATE\s+TABLE[^;]+';/gi
+    let match = text.replace(/COMMENT\s'[^']+'/gi,str=>str.replace(/;/g,',')).match( createTableReg )
+    return (match||[]).map(craeteTableText => {
+        // console.log(craeteTableText)
         let table = {};
         table.name = craeteTableText.match(/^CREATE\s+TABLE\s+[`\w]+/i)[0].replace(/^CREATE\s+TABLE\s+/, '').replace(/`/g, '');
         table.comment = getTableComment(craeteTableText);
@@ -111,23 +111,23 @@ function toJson(text) {
 }
 
 function readFromStdin() {
-    let p = new Promise((ok,refuse)=>{
+    return new Promise((ok,refuse)=>{
         var textArray = [];
         process.stdin.setEncoding('utf8');
-        process.stdin.on('readable', () => {
-            let chunk = process.stdin.read();
-            if (chunk !== null) {
+        process.stdin.on('readable', e => {
+            // console.log('readable',e)
+            while ((chunk = process.stdin.read()) !== null) {
                 textArray.push(chunk)
             }
+
         });
 
         process.stdin.on('end', () => {
+            // console.log('end')
             let data = toJson(textArray.join(''));
             ok(data)
-            // console.debug(JSON.stringify(data,' ',' '));
         });
     });
-    return p;
 }
 
 exports.toJson = toJson;
