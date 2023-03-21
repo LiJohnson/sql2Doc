@@ -96,7 +96,7 @@ function getColumns(craeteTableText) {
 }
 
 function toJson(text) {
-    console.log(text)
+    console.log("mysql2json")
     // let createTableReg = /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig
     let createTableReg = /CREATE\s+TABLE[^;]+';/gi
     let match = text.replace(/COMMENT\s'[^']+'/gi,str=>str.replace(/;/g,',')).match( createTableReg )
@@ -109,27 +109,5 @@ function toJson(text) {
         return table;
     })
 }
-
-function readFromStdin() {
-    return new Promise((ok,refuse)=>{
-        var textArray = [];
-        process.stdin.setEncoding('utf8');
-        process.stdin.on('readable', e => {
-            // console.log('readable',e)
-            while ((chunk = process.stdin.read()) !== null) {
-                textArray.push(chunk)
-            }
-
-        });
-
-        process.stdin.on('end', () => {
-            // console.log('end')
-            let data = toJson(textArray.join(''));
-            ok(data)
-        });
-    });
-}
-
 exports.toJson = toJson;
-exports.readFromStdin = readFromStdin;
 // readFromStdin()

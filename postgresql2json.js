@@ -89,6 +89,7 @@ function getKeyType(craeteTableText,columnName) {
         return line.indexOf('KEY') == 0 && line.indexOf('`' + columnName + '`') != -1
     }).map(line=>'INDEX'));
 }
+
 /**
  * 列信息
  */
@@ -114,6 +115,7 @@ function getColumns(craeteTableText,comments,tableName) {
 }
 
 function toJson(text) {
+    console.log("postgresql2json")
     let comments = getComments(text);
     let createTableReg = /CREATE\s+TABLE[^;]+['\)];/gi
     let match = text.match( createTableReg )
@@ -123,10 +125,10 @@ function toJson(text) {
         table.comment = comments[table.name]
         table.cloumns = getColumns(craeteTableText,comments,table.name)
         return table;
-    })
+    }).filter(table=>!/^_/.test(table.name))
 }
 
 
 exports.toJson = toJson;
 // debug
-require("./readFromStdin").readFromStdin().then(text=>console.log(JSON.stringify(toJson(text))))
+// require("./readFromStdin").readFromStdin().then(text=>console.log(JSON.stringify(toJson(text))))
