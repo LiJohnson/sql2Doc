@@ -22,6 +22,21 @@ function formatComment(comment){
     return comment ? comment[0] : '-'
 }
 
+// const colRefsAlias = { }
+const colRefsAlias = { 
+    "users":["user", "room"],
+    "actives":["active"],
+    "coupons":["coupon"],
+}
+
+const fileCols = ["create_time","create_by","update_by","update_time","del_flag","delete_by","delete_time"]
+
+const fromAlias = (tableNames,refTable)=>{
+    let t = Object.keys(colRefsAlias).filter(k=>colRefsAlias[k].includes(refTable))[0]
+    return t && {name:t,col:`${refTable}_id`}
+}
+
+
 require('./sql2json').readFromStdin().then(data=>{
     return data.sort((table1,table2)=>table1.name.localeCompare(table2.name))
 }).then(data=>{
@@ -33,20 +48,26 @@ require('./sql2json').readFromStdin().then(data=>{
     })
 }).then(data => {
     let now = new Date()
-    let contents = data.map(table => {
+    let tableNames = data.map(t=>t.name)
+    let refInfo = data.map(table => table.cloumns
+        .map(c=>c.name)
+        .map(colName=>colName.replace(/_id$/,''))
+        .map(refTable=>tableNames.includes(refTable) ? refTable : fromAlias(tableNames,refTable))
+        .filter(refTable=>refTable)
+        .map( refTable => ({refTableName: refTable.name || refTable , tableName:table.name , refTableCol: refTable.col || (refTable+'_id') } ) )
+    ).flat()
+
+    let contents = data
+        .filter( table=>refInfo.map(a=>[a.refTableName,a.tableName]).flat().includes(table.name) )
+        .map(table => {
         let content = [`${table.name} {`];
-        content = content.concat(table.cloumns.map((column) => `    ${formatType(column.type)} ${column.name} "${formatComment(column.comment )}"`));
+        // console.log(table.cloumns)
+        content = content.concat(table.cloumns.filter(column=>!!column.comment).filter(column=>!fileCols.includes(column.name)).map((column) => `    ${formatType(column.type)} ${column.name} "${formatComment(column.comment )}"`));
         content.push('}\n');
         return content.join('\n');
     });
 
-    let tableNames = data.map(t=>t.name)
-    let refContent = data.map(table => table.cloumns
-        .map(c=>c.name)
-        .map(colName=>colName.replace(/_id$/,''))
-        .filter(refTable=>tableNames.includes(refTable))
-        .map(refTable=>`${refTable} ||--o{ ${table.name} : ${refTable}_id`)
-    ).flat();
+    let refContent = refInfo.map(obj=>`${ obj.refTableName } ||--o{ ${obj.tableName} : ${obj.refTableCol}`)
 
     let readme = ['# 数据表关系','','黎创盛 <lcs@gzzsyc.cn>',`(${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`]
     writeContent( readme.concat(['```mermaid','erDiagram','']).concat(contents).concat(refContent).concat(['```']).join('\n'));
