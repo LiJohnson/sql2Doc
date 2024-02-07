@@ -103,9 +103,18 @@ require('./sql2json').readFromStdin().then(data=>{
         <c:Columns>
             ${table.cloumns.map( (col,col_index)=>columnNode(col,table.name)).join("")}
         </c:Columns>
+        <c:Keys>
+            <o:Key Id="PK__${table.name}">
+            <a:Name>PK__${table.name}"</a:Name>
+            <a:Name>PK__${table.name}"</a:Name>
+            <c:Key.Columns>
+            <o:Column Ref="C__${table.name}__id" />
+            </c:Key.Columns>
+            </o:Key>
+        </c:Keys>
         <c:PrimaryKey>
-                            <o:Key Ref="C__${table.name}__id" />
-                        </c:PrimaryKey>
+            <o:Key Ref="PK__${table.name}"/>
+        </c:PrimaryKey>
 
         </o:Table>
         `
