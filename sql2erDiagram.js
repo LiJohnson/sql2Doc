@@ -29,7 +29,7 @@ const colRefsAlias = {
     "coupons":["coupon"],
 }
 
-const fileCols = ["create_time","create_by","update_by","update_time","del_flag","delete_by","delete_time"]
+const fileCols = ["create_time","create_by","update_by","update_time","del_flag","delete_by","delete_time","disable_by","disable_time",'disable']
 
 const fromAlias = (tableNames,refTable)=>{
     let t = Object.keys(colRefsAlias).filter(k=>colRefsAlias[k].includes(refTable))[0]
@@ -43,7 +43,7 @@ require('./sql2json').readFromStdin().then(data=>{
      return data
      // .filter(table=>!/^sys/.test(table.name))
      .map(table=>{
-        table.name = table.name.replace(/^sys_/,'')
+        table.name = table.name.replace(/^sys_/,'').replace(/^sal_/,'')
         return table
     })
 }).then(data => {
@@ -58,7 +58,7 @@ require('./sql2json').readFromStdin().then(data=>{
     ).flat()
 
     let contents = data
-        .filter( table=>refInfo.map(a=>[a.refTableName,a.tableName]).flat().includes(table.name) )
+        // .filter( table=>refInfo.map(a=>[a.refTableName,a.tableName]).flat().includes(table.name) )
         .map(table => {
         let content = [`${table.name} {`];
         // console.log(table.cloumns)
