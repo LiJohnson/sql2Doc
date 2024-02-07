@@ -245,17 +245,7 @@ require('./sql2json').readFromStdin().then(data=>{
                         ${refInfo.join("")}
                     </c:References>
 
-                    <c:DefaultGroups>
-                        <o:Group Id="o500">
-                            <a:ObjectID>9C0C6A92-A3A9-4952-9C05-9D9FE25364DE</a:ObjectID>
-                            <a:Name>PUBLIC</a:Name>
-                            <a:Code>PUBLIC</a:Code>
-                            <a:CreationDate>1707286737</a:CreationDate>
-                            <a:Creator>lcs</a:Creator>
-                            <a:ModificationDate>1707286737</a:ModificationDate>
-                            <a:Modifier>lcs</a:Modifier>
-                        </o:Group>
-                    </c:DefaultGroups>
+                
                     <c:TargetModels>
                         <o:TargetModel Id="o501">
                             <a:ObjectID>C8483651-4FD0-4E8B-9206-AB5C02C27A42</a:ObjectID>
