@@ -43,7 +43,12 @@ require('./sql2json').readFromStdin().then(data=>{
      return data
      // .filter(table=>!/^sys/.test(table.name))
      .map(table=>{
-        table.name = table.name.replace(/^sys_/,'').replace(/^sal_/,'')
+        table.name = table.name.replace(/^sys_/,'').replace(/^\w\w\w_/,'')
+        return table
+    })
+}).then(data=>{
+    return data.map(table=>{
+        table.cloumns = table.cloumns.map(col=>({...col,name:col.name.replace(/^[_]+/,'')}))
         return table
     })
 }).then(data => {

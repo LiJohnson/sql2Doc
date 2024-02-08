@@ -83,7 +83,8 @@ require('./sql2json').readFromStdin().then(data=>{
     return data
     // .filter(table=>!/^sys/.test(table.name))
     .map(table=>{
-       table.name = table.name.replace(/^sys_/,'').replace(/^sal_/,'')
+       table.org_name = table.name;
+       table.name = table.name.replace(/^sys_/,'').replace(/^\w\w\w_/,'')
        return table
    })
 }).then(data => {
@@ -94,7 +95,7 @@ require('./sql2json').readFromStdin().then(data=>{
         <o:Table Id="T__${table.name}">
         <a:ObjectID>E066AAF7-6AEF-488B-9675-D0770FDAE997</a:ObjectID>
         <a:Name>${table.comment || table.name}</a:Name>
-        <a:Code>${ table.name}</a:Code>
+        <a:Code>${ table.org_name}</a:Code>
         <a:Comment>${table.comment || table.name}</a:Comment>
         <a:CreationDate>1707286833</a:CreationDate>
         <a:Creator>lcs</a:Creator>
