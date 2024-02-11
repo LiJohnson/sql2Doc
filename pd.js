@@ -11,18 +11,6 @@ function writeContent(fileName, content) {
     // console.debug(`${outPut}/${fileName}`)
     fs.writeFileSync(`${outPut}/${fileName}`, content);
 };
-function formatType(type) {
-    return type
-}
-function formatName(column) {
-    if (column.keyTypes.indexOf('PRIMARY') != -1) {
-        return `__**${column.name}**__`
-    }
-    if (column.keyTypes.indexOf('INDEX') != -1) {
-        return `__${column.name}__`
-    }
-    return column.name;
-}
 
 const colRefsAlias = { 
     "users":["user", "room"],
@@ -88,8 +76,6 @@ require('./sql2json').readFromStdin().then(data=>{
        return table
    })
 }).then(data => {
-    let ts = Math.floor(new Date()/1000)
-
     let contents = data.map((table,index) => {
         return `
         <o:Table Id="T__${table.name}">
