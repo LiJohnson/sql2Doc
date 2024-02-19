@@ -165,17 +165,13 @@ require('./sql2json').readFromStdin().then(data=>{
         `
     }
 
-    let tableNames = data.map(t=>t.name)
-    let refList = data.map(table => table.cloumns
-        .map(c=>c.name)
-        .map(colName=>colName.replace(/_id$/,''))
-        .map(refTable=>tableNames.includes(refTable) ? refTable : fromAlias(tableNames,refTable))
-        .filter(refTable=>refTable)
-        .map( refTable => ({refTableName: refTable.name || refTable , tableName:table.name , refTableCol: refTable.col || (refTable+'_id') } ) )
-    ).flat();
+    let refList = data.map(table => {
+        return table.cloumns.filter(col=>col.refTable).map(col=>({refTableName: col.refTable.replace(/^\w\w\w_/,'') , tableName:table.name , refTableCol: col.name } ) )
+    }).flat()
     let refInfo = refList.map(ref=>refs(ref))
     let refSymbol = refList.map(ref=>refSymbols(ref))
-// console.log(refInfo)
+    console.log(refList)
+
     writeContent('pd.pdm', 
     `<?xml version="1.0" encoding="UTF-8"?>
     <?PowerDesigner AppLocale="UTF16" ID="{0660C81F-B5A2-435A-AF99-55E6E1A8E951}" Label="" LastModificationDate="1707291982" Name="12" Objects="543" Symbols="24" Target="MySQL 5.0" Type="{CDE44E21-9669-11D1-9914-006097355D9B}" signature="PDM_DATA_MODEL_XML" version="16.5.0.3982"?>

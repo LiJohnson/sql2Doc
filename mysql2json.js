@@ -13,7 +13,8 @@
         canNull: "can be null",
         default: "default value",
         comment: "column comment",
-        keyTypes: "PRIMARY|INDEX|FOREIGN"
+        keyTypes: "PRIMARY|INDEX|FOREIGN",
+        refTable: "table name",
     }]
 }
 **/
@@ -95,12 +96,22 @@ function getColumns(craeteTableText) {
         });
 }
 
+const colRefsAlias = { 
+    // "sys_user":["user", "room"],
+    // "sys_dept":["dept","exec_dept"],
+}
+
+const fromAlias = (refTable)=>{
+    let t = Object.keys(colRefsAlias).filter(k=>colRefsAlias[k].includes(refTable))[0]
+    return t 
+}
+
 function toJson(text) {
     // console.log("mysql2json")
     // let createTableReg = /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig
     let createTableReg = /CREATE\s+TABLE[^;]+'?;/gi
     let match = text.replace(/COMMENT\s'[^']+'/gi,str=>str.replace(/;/g,',')).match( createTableReg )
-    return (match||[]).map(craeteTableText => {
+    let tables= (match||[]).map(craeteTableText => {
         // console.log(craeteTableText)
         let table = {};
         table.name = craeteTableText.match(/^CREATE\s+TABLE\s+[`\w]+/i)[0].replace(/^CREATE\s+TABLE\s+/, '').replace(/`/g, '');
@@ -108,6 +119,27 @@ function toJson(text) {
         table.cloumns = getColumns(craeteTableText)
         return table;
     })
+    
+    let tableNames = tables.map(t=>t.name)
+    tables.forEach(table=>{
+        table.cloumns.filter(col=>col.name.match(/_id$/))
+        .forEach(col=>{
+            let refTable = col.name.replace(/_id$/,'')
+            let ref = tableNames.find(name=>{
+                // return name === refTable
+                return name.replace(/^\w\w\w_/,'') === refTable
+            })
+            if(!ref){
+                ref = fromAlias(refTable)
+            }
+            if(ref){
+                col.refTable = ref;
+            }
+        })
+    })
+    // console.log(JSON.stringify(tables))
+
+    return tables;
 }
 exports.toJson = toJson;
 // readFromStdin()

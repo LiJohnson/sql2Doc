@@ -43,7 +43,7 @@ require('./sql2json').readFromStdin().then(data=>{
      return data
      // .filter(table=>!/^sys/.test(table.name))
      .map(table=>{
-        table.name = table.name.replace(/^sys_/,'').replace(/^\w\w\w_/,'')
+        // table.name = table.name.replace(/^sys_/,'').replace(/^\w\w\w_/,'')
         return table
     })
 }).then(data=>{
@@ -72,10 +72,12 @@ require('./sql2json').readFromStdin().then(data=>{
         return content.join('\n');
     });
 
-    let refContent = refInfo.map(obj=>`${ obj.refTableName } ||--o{ ${obj.tableName} : ${obj.refTableCol}`)
+    let refContent = data.map(table => {
+        return table.cloumns.filter(col=>col.refTable).map(col=>`${ col.refTable } ||--o{ ${table.name} : ${col.name}`)
+    }).flat()
 
     let readme = ['# 数据表关系','','黎创盛 <lcs@gzzsyc.cn>',`(${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`]
     writeContent( readme.concat(['```mermaid','erDiagram','']).concat(contents).concat(refContent).concat(['```']).join('\n'));
-    console.log(['erDiagram',''].concat(contents).concat(refContent).join('\n'))
+    // console.log(['erDiagram',''].concat(contents).concat(refContent).join('\n'))
 });
 
