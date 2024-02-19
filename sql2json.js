@@ -9,3 +9,4 @@ const toJson = MAP[process.env.SQL_TYPE] || mysql
 // console.log(process.env)
 
 exports.readFromStdin = ()=>readFromStdin().then(toJson)
+// readFromStdin().then(toJson).then(a=>console.log(a[0]))

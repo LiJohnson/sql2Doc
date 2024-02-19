@@ -76,5 +76,6 @@ require('./sql2json').readFromStdin().then(data=>{
 
     let readme = ['# 数据表关系','','黎创盛 <lcs@gzzsyc.cn>',`(${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()})\n`]
     writeContent( readme.concat(['```mermaid','erDiagram','']).concat(contents).concat(refContent).concat(['```']).join('\n'));
+    console.log(['erDiagram',''].concat(contents).concat(refContent).join('\n'))
 });
 

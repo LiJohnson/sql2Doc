@@ -78,7 +78,7 @@ function getKeyType(craeteTableText,columnName) {
  * 列信息
  */
 function getColumns(craeteTableText) {
-    return craeteTableText.match(/\s+`\w+`\s[\(\)\w\,]{2,}([\w'\s]+COMMENT\s'[^']*')?/gi)
+    return craeteTableText.match(/\s+`\w+`\s[\(\)\w\,]{2,}([\w'\s\.]+COMMENT\s'[^']*')?/gi)
         .map(line=>{
             let lineArr = line.trim().split(' ');
             let column = {};
@@ -96,7 +96,7 @@ function getColumns(craeteTableText) {
 }
 
 function toJson(text) {
-    console.log("mysql2json")
+    // console.log("mysql2json")
     // let createTableReg = /CREATE\s+TABLE.+(\r?\n\s+.+)+\r?\n\)[^;]+;/ig
     let createTableReg = /CREATE\s+TABLE[^;]+'?;/gi
     let match = text.replace(/COMMENT\s'[^']+'/gi,str=>str.replace(/;/g,',')).match( createTableReg )
