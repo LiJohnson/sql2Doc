@@ -24,12 +24,16 @@ function formatType(type) {
     // if (!/^enum.+\,.+/.test("enum('EXCHANGE','REFUND','FOLLOWUP','PROCESSED')")) return type;
     return type.replace(/\,/g, ',\n');
 }
-function formatName(column) {
+function formatName(column,tables) {
     if (column.keyTypes.indexOf('PRIMARY') != -1) {
         return `__**${column.name}**__`
     }
     if (column.keyTypes.indexOf('INDEX') != -1) {
         return `__${column.name}__`
+    }
+    if( column.refTable ){
+        let index = tables.findIndex(t=>t.name === column.refTable)
+        return `<<_${index+1}_${column.refTable.toLocaleLowerCase()},${column.name}>>`
     }
     return column.name;
 }
@@ -49,7 +53,7 @@ require('./sql2json').readFromStdin().then(data=>{
         content.push('[options="header", cols=".^1a,.^3a,.^3a,.^1a,.^3a,.^5a"]');
         content.push('|===');
         content.push(`|序号|字段名|数据类型|可空|默认|描述`);
-        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column)}|${formatType(column.type).toLocaleUpperCase()}|${column.canNull}|${column.default}|${column.comment||''}`));
+        content = content.concat(table.cloumns.map((column, index) => `|${index + 1}|${formatName(column,data)}|${formatType(column.type).toLocaleUpperCase()}|${column.canNull}|${column.default}|${column.comment||''}`));
         content.push('|===');
         content.push('\n');
         return content.join('\n');

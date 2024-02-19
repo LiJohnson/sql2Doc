@@ -170,7 +170,7 @@ require('./sql2json').readFromStdin().then(data=>{
     }).flat()
     let refInfo = refList.map(ref=>refs(ref))
     let refSymbol = refList.map(ref=>refSymbols(ref))
-    console.log(refList)
+    // console.log(refList)
 
     writeContent('pd.pdm', 
     `<?xml version="1.0" encoding="UTF-8"?>
