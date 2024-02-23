@@ -87,7 +87,7 @@ function getColumns(craeteTableText) {
             column.type = lineArr[1].replace(/\,$/g,'');
             column.canNull = line.match(/NOT NULL/i) ? 'N' : 'Y';
 
-            column.default = (line.match(/DEFAULT\s\S+[\s,]/i)||[""])[0].match(/\s.+/);
+            column.default = (line.match(/DEFAULT\s\S+[\s,\(\)]/i)||[""])[0].match(/\s.+/);
             column.default = (column.default||[""])[0].trim().replace(/(\'|,$)/g,"") || "";
 
             column.comment = (line.match(/COMMENT\s'[^']+'/) || [''])[0].replace(/^COMMENT\s'/,'').replace(/'$/,'');
@@ -99,6 +99,7 @@ function getColumns(craeteTableText) {
 const colRefsAlias = { 
     // "sys_user":["user", "room"],
     // "sys_dept":["dept","exec_dept"],
+    "sal_material":["product","component"],
 }
 
 const fromAlias = (refTable)=>{
