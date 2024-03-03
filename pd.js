@@ -12,17 +12,6 @@ function writeContent(fileName, content) {
     fs.writeFileSync(`${outPut}/${fileName}`, content);
 };
 
-const colRefsAlias = { 
-    "users":["user", "room"],
-    "actives":["active"],
-    "coupons":["coupon"],
-}
-
-
-const fromAlias = (tableNames,refTable)=>{
-    let t = Object.keys(colRefsAlias).filter(k=>colRefsAlias[k].includes(refTable))[0]
-    return t && {name:t,col:`${refTable}_id`}
-}
 
 function columnNode(column,tableName){
     return `

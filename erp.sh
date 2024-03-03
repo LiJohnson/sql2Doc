@@ -29,5 +29,5 @@ echo $OUT/数据表关系.svg
 echo $OUT/pd.pdm
 echo $OUT/db.sql
 
-scp $OUT/pd.pdm win11.jh.com:/c/Users/lcs/Desktop/erp-db-designer/erp/哈尔滨变压器.pdm
-scp $OUT/sql-doc.html zs-107:/tmp/erp/erp_ht.html
+scp $OUT/pd.pdm win10.jh.com:/c/Users/lcs/Desktop/erp-db-designer/erp/哈尔滨变压器.pdm
+scp $OUT/sql-doc.html zs-109:/tmp/erp/erp_ht.html
